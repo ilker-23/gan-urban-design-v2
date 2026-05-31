@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+.python-version
+
+# PyTorch / ML artefactleri
+*.pth
+*.pt
+*.ckpt
+*.onnx
+runs/
+lightning_logs/
+wandb/
+tensorboard_logs/
+
+# Data ve sonuçlar (Drive'a/yerel diske yazılır, repo'ya değil)
+data/maps/
+data/deepglobe/
+data/processed/
+data/raw/
+results/
+checkpoints/
+generated/
+fid_cache/
+
+# Build & paket
+build/
+dist/
+.eggs/
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Ortam değişkenleri
+.env
+.env.*
+
+# Geçici / büyük dosyalar
+*.tar.gz
+*.zip
+*.7z
+*.png_backup
+*.tmp
+
+# Harici klonlanan repolar (Colab'da çalışma zamanında çekilir)
+external/
+
+# IDE / asistan dosyaları
+.claude/

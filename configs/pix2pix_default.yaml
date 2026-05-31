@@ -1,0 +1,47 @@
+# Pix2Pix baseline — sketch -> map (renkli plan)
+experiment_name: pix2pix_sketch2map
+
+# Veri
+data:
+  root: data/processed/maps_sketch
+  image_size: 256
+  batch_size: 16            # A100 üzerinde 256² için rahat
+  num_workers: 4
+  augment:
+    h_flip: true
+    rotate90: true
+    color_jitter_target_only: true
+
+# Model
+model:
+  name: pix2pix
+  in_channels: 3
+  out_channels: 3
+  gen_features: 64          # U-Net taban kanal sayısı
+  disc_features: 64         # PatchGAN taban kanal sayısı
+  norm: instance            # instance | batch
+  use_dropout: true
+
+# Kayıp
+loss:
+  gan: lsgan                # lsgan | vanilla | wgangp
+  lambda_l1: 100.0
+  lambda_perceptual: 0.0    # >0 yapınca VGG perceptual eklenir
+
+# Optimizasyon
+optim:
+  lr: 2.0e-4
+  beta1: 0.5
+  beta2: 0.999
+
+# Eğitim
+train:
+  epochs: 200
+  lr_decay_start_epoch: 100   # 100. epoch'tan itibaren lineer decay
+  save_every_epochs: 25
+  log_every_steps: 100
+  seed: 42
+
+# Çıktı
+output:
+  run_dir: ${oc.env:RUN_DIR, results/pix2pix_default}
