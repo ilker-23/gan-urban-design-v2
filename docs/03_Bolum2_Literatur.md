@@ -240,25 +240,27 @@ Bu katkılar, Bölüm 3'te (Materyal ve Yöntem) ve Bölüm 4'te (Deneysel Sonu�
 - Proje sayfası: https://nvlabs.github.io/SPADE/
 - Kod: https://github.com/NVlabs/SPADE
 
-**[8]** (Building & Environment Review) Aydın, Y. (vd.) (2023). Generative Adversarial Networks in the Built Environment: A Comprehensive Review. *Building and Environment*, 213, 110869.
+**[8]** Wu, A. N., Stouffs, R., & Biljecki, F. (2022). Generative Adversarial Networks in the built environment: A comprehensive review of the application of GANs across data types and scales. *Building and Environment*, 223, 109477. https://doi.org/10.1016/j.buildenv.2022.109477
 - Elsevier: https://www.sciencedirect.com/science/article/abs/pii/S0360132322007089
+- Yazar açık PDF: https://filipbiljecki.com/publications/2022_bae_gan.pdf
+- Proje sayfası: https://ual.sg/publication/2022-bae-gan/
 
 **[9]** Karras, T., Laine, S., Aittala, M., Hellsten, J., Lehtinen, J., & Aila, T. (2020). Analyzing and Improving the Image Quality of StyleGAN. *IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*, 8110–8119.
 - arXiv: https://arxiv.org/abs/1912.04958
 - Kod: https://github.com/NVlabs/stylegan2
 
-**[10]** Chen, R., Zhao, J., Yao, X., Jiang, S., He, Y., Bao, B., Luo, X., Xu, S., & Wang, C. (2024). Enhancing Urban Landscape Design: A GAN-Based Approach for Rapid Color Rendering of Park Sketches. *Land*, 13(2), 254. https://doi.org/10.3390/land13020254
+**[10]** Chen, R., Zhao, J., Yao, X., He, Y., Li, Y., Lian, Z., Han, Z., Yi, X., & Li, H. (2024). Enhancing Urban Landscape Design: A GAN-Based Approach for Rapid Color Rendering of Park Sketches. *Land*, 13(2), 254. https://doi.org/10.3390/land13020254
 - MDPI: https://www.mdpi.com/2073-445X/13/2/254
 - ResearchGate: https://www.researchgate.net/publication/378321366
 
-**[11]** Jiang, F., Ma, J., Webster, C. J., Chiaradia, A. J. F., Zhou, Y., Zhao, Z., & Zhang, X. (2024). Automated site planning using CAIN-GAN model. *Automation in Construction*, 159, 105306.
+**[11]** Jiang, F., Ma, J., Webster, C. J., Wang, W., & Cheng, J. C. P. (2024). Automated site planning using CAIN-GAN model. *Automation in Construction*, 159, 105286. https://doi.org/10.1016/j.autcon.2024.105286
 - Elsevier: https://www.sciencedirect.com/science/article/abs/pii/S0926580524000220
 - ResearchGate: https://www.researchgate.net/publication/378641918_Automated_site_planning_using_CAIN-GAN_model
 
-**[12]** Ye, X., Du, J., & Ye, Y. (2022). MasterplanGAN: Facilitating the smart rendering of urban master plans via generative adversarial networks. *Environment and Planning B: Urban Analytics and City Science*, 49(3), 794–814.
-- SAGE: https://journals.sagepub.com/doi/abs/10.1177/23998083211023516
+**[12]** Ye, X., Du, J., & Ye, Y. (2022). MasterplanGAN: Facilitating the smart rendering of urban master plans via generative adversarial networks. *Environment and Planning B: Urban Analytics and City Science*, 49(3), 794–814. https://doi.org/10.1177/23998083211023516
+- SAGE: https://journals.sagepub.com/doi/10.1177/23998083211023516
 
-**[13]** Quan, S. J. (2020). Suggestive Site Planning with Conditional GAN and Urban GIS Data. In *Proceedings of the 2019 DigitalFUTURES (CDRF 2019)*, Springer, 103–113.
+**[13]** Quan, S. J. (Steven Jige Quan) (2020). Suggestive Site Planning with Conditional GAN and Urban GIS Data. In *Proceedings of the 2019 DigitalFUTURES (CDRF 2019)*, Springer, 103–113. https://doi.org/10.1007/978-981-33-4400-6_10
 - Springer: https://link.springer.com/chapter/10.1007/978-981-33-4400-6_10
 - CumInCAD: http://papers.cumincad.org/cgi-bin/works/paper/cdrf2019_103
 - Açık PDF: http://papers.cumincad.org/data/works/att/cdrf2019_103.pdf
@@ -275,17 +277,22 @@ Bu katkılar, Bölüm 3'te (Materyal ve Yöntem) ve Bölüm 4'te (Deneysel Sonu�
 - arXiv: https://arxiv.org/abs/2103.02574
 - Proje sayfası: https://ennauata.github.io/houseganpp/page.html
 
-**[17]** Liu, Y., Fang, C., Yang, Z., Wang, X., Zhou, Z., Deng, Q., & Liang, L. (2023). Building layout generation using site-embedded GAN model. *Automation in Construction*, 151, 104888.
+**[17]** Jiang, F., Ma, J., Webster, C. J., ve ark. (2023). Building layout generation using site-embedded GAN model. *Automation in Construction*, 151, 104888. https://doi.org/10.1016/j.autcon.2023.104888
 - Elsevier: https://www.sciencedirect.com/science/article/abs/pii/S0926580523001486
+- HKU Scholars Hub: https://hub.hku.hk/handle/10722/335691
+- Semantic Scholar: https://www.semanticscholar.org/paper/f77f6a5d7227fecc3d7acc53f309a56c2e67081c
 
-**[18]** (Architectural layout, graph-constrained cGAN) Wang, S., Zeng, W., Chen, X., Ye, Y., Qiao, Y., & Fu, C.-W. (2023). Architectural layout generation using a graph-constrained conditional Generative Adversarial Network (GAN). *Automation in Construction*, 155, 105019.
+**[18]** Aalaei, M., Saadi, M., Rahbar, M., & Ekhlassi, A. (2023). Architectural layout generation using a graph-constrained conditional Generative Adversarial Network (GAN). *Automation in Construction*, 155, 105019.
 - Elsevier: https://www.sciencedirect.com/science/article/abs/pii/S0926580523003138
+- Semantic Scholar: https://www.semanticscholar.org/paper/5e10610a6a6161f05d272a592486d3c360663113
 
-**[19]** Yan, J., Sun, J., Lin, B., Xie, X., Zhang, Y., & Wang, Y. (2025). Automated site layout generation for buildings using graph-constrained generative adversarial network. *Building Simulation*. https://doi.org/10.1007/s12273-025-1350-7
+**[19]** Jiang, M., Chen, Y., Liu, X., & Gao, J. (2025). Automated site layout generation for buildings using graph-constrained generative adversarial network. *Building Simulation*, 18(11), 3097–3118. https://doi.org/10.1007/s12273-025-1350-7
 - Springer: https://link.springer.com/article/10.1007/s12273-025-1350-7
+- SciOpen: https://www.sciopen.com/article/10.1007/s12273-025-1350-7
 
-**[20]** Liu, B., Tao, Y., Zhou, P., Ma, Z., & Wang, Z. (2024). Automated urban landscape design: an AI-driven model for emotion-based layout generation and appraisal. *Heliyon*, 10(22).
-- PMC: https://pmc.ncbi.nlm.nih.gov/articles/PMC11623217/
+**[20]** Tang, X., & Chung, W.-j. (2024). Automated urban landscape design: an AI-driven model for emotion-based layout generation and appraisal. *PeerJ Computer Science*, 10, e2426. https://doi.org/10.7717/peerj-cs.2426
+- PMC tam metin: https://pmc.ncbi.nlm.nih.gov/articles/PMC11623217/
+- PeerJ: https://peerj.com/articles/cs-2426/
 
 **[21]** Sangkloy, P., Lu, J., Fang, C., Yu, F., & Hays, J. (2017). Scribbler: Controlling Deep Image Synthesis with Sketch and Color. *IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*, 5400–5409.
 - CVF Open Access: https://openaccess.thecvf.com/content_cvpr_2017/html/Sangkloy_Scribbler_Controlling_Deep_CVPR_2017_paper.html
@@ -326,3 +333,5 @@ Bu katkılar, Bölüm 3'te (Materyal ve Yöntem) ve Bölüm 4'te (Deneysel Sonu�
 ---
 
 > **Doğrulama notu:** Yukarıdaki 28 kaynağın tamamı için en az bir tıklanabilir bağlantı (arXiv veya CVF Open Access) kayıt-gerektirmez şekilde halka açıktır. arXiv kayıtları hiçbir koşulda silinmez; bu, tez savunma jürisinin referans incelemesi için kalıcı erişimi garanti eder. Elsevier/Springer/MDPI/SAGE bağlantıları yayıncı sayfasına yönlendirir ve makale özetine her durumda erişim sağlar; tam metin için kurumsal abonelik veya yazardan istek gerekir.
+>
+> **İkincil doğrulama (Mayıs 2026 turu):** [8], [10], [11], [12], [13], [17], [18], [19], [20] numaralı dokuz kaynağın **yazar listeleri, cilt/sayfa numaraları ve DOI'leri** ScienceDirect, Springer, SciOpen, PeerJ, ResearchGate ve PMC üzerinden bağımsız çapraz-kontrolle teyit edilerek bu sürümde nihai forma getirilmiştir. Önemli düzeltmeler: [11] sayfa numarası 105306 → **105286**; [20] dergi **PeerJ Computer Science** (önceki sürümdeki "Heliyon" hatalı idi); [19] cilt 18(11), sayfa 3097–3118 olarak doğrulandı.
