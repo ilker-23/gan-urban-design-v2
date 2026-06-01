@@ -3,6 +3,16 @@
 
 Fırat Üniversitesi Fen Bilimleri Enstitüsü Yüksek Lisans Tezi — Uygulama Reposu.
 
+### Colab'da Hızlı Aç
+
+| Notebook | Açıklama | Aç |
+|----------|----------|----|
+| `colab_pix2pix.ipynb` | Bizim Pix2Pix implementasyonu (sketch→map) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/colab_pix2pix.ipynb) |
+| `colab_external_models.ipynb` | CycleGAN + Pix2PixHD karşılaştırma | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/colab_external_models.ipynb) |
+
+> Badge çalışmazsa URL'i tarayıcıya yapıştırın:
+> `https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/<NOTEBOOK>.ipynb`
+
 ---
 
 ## Proje Özeti
