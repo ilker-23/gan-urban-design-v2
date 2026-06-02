@@ -32,7 +32,16 @@ Bölüm 1.4'te formüle edilen dört araştırma sorusu (AS1–AS4), elde edilen
 
 **H2 (Chen vd. 2024 üzerine geçme).** Bu tezin Pix2Pix baseline'ı, Chen vd. [10] çalışmasındaki 152 örneklik dataset'in **14,4 katı veri** üzerinde eğitilmiştir. Veri ölçeğindeki bu kazanım, augmentation stratejisi ile birleştiğinde, mutlak SSIM 0,78 değerinin niceliksel olarak söz konusu literatür baseline'ının üzerinde olması beklenmektedir. Son derleme aşamasında, [10]'un Tablo 4'ünden alınacak SSIM ve PSNR değerleri ile tam karşılaştırma yapılacaktır.
 
-**H3 (Pix2Pix > CycleGAN).** Eşli veri ile çalışan Pix2Pix'in, eşsiz öğrenen CycleGAN'a kıyasla **plan/diyagram tipi keskin-sınırlı görüntülerde** üstün olması beklenmektedir. Pix2Pix'in L1 = 8,01 değeri piksel-bazında çok düşük hata anlamına gelir; CycleGAN'ın aynı koşulda hangi düzeyde kalacağı E1-CycleGAN deneyi sonrasında raporlanacaktır.
+**H3 (Pix2Pix > CycleGAN) — DOĞRULANDI.** Eşli veri ile çalışan Pix2Pix'in, eşsiz öğrenen CycleGAN'a kıyasla plan/diyagram tipi keskin-sınırlı görüntülerde piksel-tam doğrulukta üstün olduğu hipotezi, deneysel olarak **dört piksel-sadakat metriğinin tamamında doğrulanmıştır**: Pix2Pix SSIM 0,7772 (CycleGAN 0,6578), PSNR 27,36 dB (24,01), LPIPS 0,1766 (0,2032) ve L1 8,01 (11,72). Ancak bu doğrulama, beklenmedik ve teorik açıdan değerli bir gözlemle birlikte gelmiştir: **CycleGAN, FID metriğinde Pix2Pix'i belirgin biçimde geçmiştir (54,58'e karşı 151,84).** Bu, salt "H3 doğru/yanlış" ikiliğinin ötesinde, bir **algı-bozulma ödünleşimini** (perception-distortion tradeoff, Blau & Michaeli 2018 [33]) ortaya koyar — §5.2.1'de ayrıntılandırılmıştır.
+
+### 5.2.1 Algı-Bozulma Ödünleşiminin Yorumu
+
+CycleGAN'ın düşük FID (yüksek dağılımsal gerçekçilik) ama düşük SSIM/PSNR (düşük piksel sadakati) profili, üretken modeller literatüründe iyi bilinen **algı-bozulma ödünleşiminin** ders kitabı niteliğinde bir örneğidir [33]:
+
+- **L1 kaybı olmadan** eğitilen CycleGAN, çıktılarını gerçek map dağılımının istatistiklerine (keskin renk blokları, doygun yeşil/mavi) yaklaştırır → düşük FID, görsel "inandırıcılık".
+- **L1 kaybı ($\lambda=100$) ile** eğitilen Pix2Pix, çıktısını belirli hedef piksellerine sabitler → yüksek SSIM/PSNR, mekânsal "doğruluk", ama hafif bulanıklık nedeniyle daha yüksek FID.
+
+**Tezin uygulama bağlamı için çıkarım:** Kentsel peyzaj planı üretiminde **mekânsal doğruluk** (yol, su, yeşil alan sınırlarının doğru konumda olması) görsel inandırıcılıktan daha kritiktir. Bu nedenle **eşli Pix2Pix ailesi**, park/plan renklendirme için tercih edilen yaklaşımdır. CycleGAN ise, eşli veri bulunmayan veya salt estetik gerçekçiliğin hedeflendiği senaryolar için değerli bir alternatiftir.
 
 ---
 
@@ -103,3 +112,11 @@ Bu bölümde:
 - **Etik ve toplumsal sonuçlar** dört boyut üzerinden incelenmiştir.
 
 Bölüm 6, çalışmanın ana bulgularını özetlemekte ve gelecek araştırma yönelimlerini sunmaktadır.
+
+---
+
+## Bölüm 5 İçin Ek Kaynak
+
+**[33]** Blau, Y., & Michaeli, T. (2018). The Perception-Distortion Tradeoff. *IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 6228–6237.
+- CVF Open Access: https://openaccess.thecvf.com/content_cvpr_2018/html/Blau_The_Perception-Distortion_Tradeoff_CVPR_2018_paper.html
+- arXiv: https://arxiv.org/abs/1711.06077
