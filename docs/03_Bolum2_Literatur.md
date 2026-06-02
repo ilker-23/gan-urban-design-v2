@@ -144,17 +144,22 @@ Chen ve Hays tarafından CVPR 2018'de sunulan **SketchyGAN** [22], elle çizilmi
 
 ### 2.5.3 Chen vd. (2024) — Park Krokilerini GAN ile Renklendirme
 
-Bu tezin doğrudan üzerine inşa edileceği **birincil benchmark çalışması**, Chen ve arkadaşları tarafından MDPI *Land* dergisinde 2024'te yayımlanan ve doğrudan tezin alt başlığı ile örtüşen makaledir [10]: *"Enhancing Urban Landscape Design: A GAN-Based Approach for Rapid Color Rendering of Park Sketches."* Yazarlar:
+Bu tezin doğrudan üzerine inşa edileceği **birincil benchmark çalışması**, Chen ve arkadaşları tarafından MDPI *Land* dergisinde 2024'te yayımlanan ve doğrudan tezin alt başlığı ile örtüşen makaledir [10]: *"Enhancing Urban Landscape Design: A GAN-Based Approach for Rapid Color Rendering of Park Sketches."* Yazarların yöntemi ve bulguları aşağıda detaylı incelenmiştir:
 
-- **Veri:** 152 adet eşli (kroki + renkli plan) park çizimi.
-- **Yöntem:** Koşullu GAN; **Pix2Pix ve CycleGAN** karşılaştırması.
-- **Bulgu:** Pix2Pix, paired data ile renk doğruluğu ve detay korunmasında CycleGAN'ı geçmiştir. GAN-tabanlı veri çoğaltma çıktı kalitesini iyileştirmiştir.
-- **Sınırlama:** Dataset boyutu küçüktür (152 çift); önerilen modeller temel Pix2Pix/CycleGAN olup ileri mimari (Pix2PixHD, SPADE) denenmemiştir.
+- **Veri toplama:** 152 adet eşli, elle çizilmiş kroki + renkli plan çifti manuel olarak toplanmıştır. 512×512 jpg formatına standardize edilmiştir.
+- **Veri çoğaltma:** Yazarlar, ön-eğitimli bir GAN üzerinde data augmentation uygulayarak veri kümesini 152 → 348 → 1.047 → 1.699 çiftine kademeli olarak genişletmişlerdir. Bu, dört farklı veri-ölçeği rejiminde model davranışını incelemelerine olanak sağlamıştır.
+- **Karşılaştırılan algoritmalar:** **Pix2Pix** (eşli) ve **CycleGAN** (eşsiz) iki temel koşullu GAN mimarisi.
+- **Test seti:** Sadece **5 adet elle çizilmiş kroki** üzerinde test yapılmıştır.
+- **Değerlendirme yöntemi:** Yazarlar, niceliksel computer vision metrikleri (FID, SSIM, PSNR) yerine **dört niteliksel kriterle peyzaj-tasarım perspektifinden değerlendirme** yapmışlardır: (i) çizgi kenarındaki rengin netliği, (ii) yaya yolu/yol/düğüm gibi detayların tamlığı, (iii) ağaç/çim renklerinin makulluğu ve çeşitliliği, (iv) genel stilin estetik bütünlüğü. Bu metodolojik tercih makalenin Tartışma bölümünde açıkça gerekçelendirilmiştir: *"this study emphasizes the practicality of the results generated in the related design industry rather than simply conforming to the accuracy of the computer vision field"* [10, s. 12].
+- **Başlıca bulgu (niteliksel):** CycleGAN, renk doğruluğu ve zenginlik açısından Pix2Pix'i geçmiştir. CycleGAN belirli detay öğelerinde (su yüzeyleri, mavi/mor görünen ağaçlar, bulanık yol sınırları) hata yapmaktadır. Veri çoğaltmanın artması ile (152 → 1.699) çıktı stili daha temiz ve uygulanabilir hale gelmektedir.
+- **Yazarların kendi belirttiği sınırlamalar:** (i) sadece küçük-orta ölçekli park tasarımı, (ii) data augmentation üzerinde detaylı kontrol yokluğu, (iii) bitki örtüsü renk çeşitliliğinde sınırlı performans.
 
-Bu tezin bu çalışmaya kıyasla katkıları:
-1. **Veri ölçeği:** `maps` dataset'inden türetilen ~2,000+ eşli kroki–renkli plan örneği (~14× büyüklük).
-2. **Mimari kapsamı:** Pix2Pix ve CycleGAN'a ek olarak Pix2PixHD ve SPADE de değerlendirilmektedir.
-3. **Pipeline bütünlüğü:** Yalnız renklendirme değil, plan üretimi + renklendirmenin iki aşamalı entegrasyonu.
+Bu tezin bu çalışmaya kıyasla **dört katkısı** vardır:
+
+1. **Veri ölçeği:** Berkeley `maps` halka açık datasetinden türetilen 2.194 eşli kroki–renkli plan çifti (Chen vd.'nin manuel topladığı 152 çiftin **~14 katı**, augment edilmiş 1.699 çiftin **~1,3 katı**). Veri kümesi yeniden üretilebilir ve kayıt-gerektirmez.
+2. **Doğrulama tabanı:** 1.098 örnek val seti (Chen vd.'nin 5 örneklik test setinin **~220 katı**).
+3. **Niceliksel sertlik:** Chen vd.'nin metodolojik tercihiyle raporlamadığı **FID, SSIM, PSNR, LPIPS ve L1** metrikleri birlikte sunularak alandaki ilk niceliksel benchmark zemini oluşturulmuştur. (Yazarların niteliksel yaklaşımı pratik açıdan değerli olmakla birlikte, bilimsel tekrarlanabilirlik ve karşılaştırılabilirlik için niceliksel raporlama gereklidir.)
+4. **Mimari kapsamı:** Pix2Pix ve CycleGAN'a ek olarak **Geliştirilmiş Pix2Pix (512²+VGG perceptual)** modelinin park-kroki renklendirme problemine ilk uygulanması (literatürde bu kombinasyon park alanına henüz uygulanmamıştır).
 
 ---
 

@@ -85,21 +85,31 @@ Pix2Pix modeli, 200 epoch eğitim sonunda val kümesinde aşağıdaki metrikleri
 
 **L1 = 8,01.** 0–255 piksel skalasında ortalama mutlak hata $\approx 3\%$'tir; bu, model çıktısı ile hedef arasındaki **piksel-yoğun bölge eşleşmesinin yüksek doğrulukla** sağlandığını gösterir.
 
-### 4.2.4 Chen vd. (2024) ile Karşılaştırma
+### 4.2.4 Chen vd. (2024) ile Metodolojik Karşılaştırma
 
-Chen ve arkadaşları [10] benzer bir görevde (152 eşli park-kroki / renkli plan çifti) Pix2Pix mimarisini uygulamıştır. Yazarların raporladığı niceliksel metrikler (SSIM ve PSNR temel olmak üzere) ile bu çalışmanın baseline metrikleri karşılaştırmalı olarak Tablo 4.2'de sunulmaktadır:
+Chen ve arkadaşları [10], `Land 2024, 13(2):254` makalesinde **doğrudan bu tezin alt görevi olan park-kroki renklendirmesini** Pix2Pix ve CycleGAN ile incelemiştir. Yöntemleri ve değerlendirme yaklaşımları, bu tezdekilerden iki temel açıdan farklıdır (Tablo 4.2):
 
-**Tablo 4.2.** Chen vd. (2024) [10] ile bu çalışmanın Pix2Pix baseline'ının karşılaştırması.
+**Tablo 4.2.** Chen vd. (2024) [10] ile bu çalışmanın metodolojik karşılaştırması.
 
-| Metrik | Chen vd. 2024 (Pix2Pix) | **Bu çalışma (Pix2Pix)** | Fark |
-|--------|------------------------:|-------------------------:|------|
-| Eğitim örnek sayısı | 152 | **2.194** | **+14,4×** |
-| SSIM | (yazarlarca raporlanan değer) | **0,7772** | – |
-| PSNR (dB) | (yazarlarca raporlanan değer) | **27,36** | – |
-| FID | – | **151,84** | – |
-| LPIPS | – | **0,1766** | – |
+| Boyut | Chen vd. (2024) [10] | **Bu çalışma** |
+|-------|----------------------|----------------|
+| Eğitim veri kümesi | **152** manuel elle-çizilmiş eşli kroki-plan (data augmentation ile 1.699'a çıkarıldı) | **2.194** eşli çift (Berkeley `maps`, halka açık) |
+| Test/doğrulama kümesi | **5** hand-drawn sketch | **1.098** val çifti |
+| Görüntü çözünürlüğü | 512×512 | 256×256 (Pix2Pix/CycleGAN) + 512×512 (Enhanced) |
+| Karşılaştırılan modeller | Pix2Pix, CycleGAN | Pix2Pix, CycleGAN, **Geliştirilmiş Pix2Pix (512²+VGG)** |
+| **Niceliksel metrikler** | **Raporlanmamıştır** — yazarlar açıkça niteliksel değerlendirmeyi tercih ettiklerini belirtir [10, s. 12]: *"this study emphasizes the practicality of the results generated in the related design industry rather than simply conforming to the accuracy of the computer vision field"* | **FID, SSIM, PSNR, LPIPS, L1** — beş standart metrik val seti üzerinde |
+| Niteliksel kriterler | 4 görsel kriter (kenar netliği, detay tamlığı, renk makulluğu, estetik) | Görsel kıyaslama (Şekil 4.7 — niteliksel grid) |
+| Yazarların başlıca bulgusu | "CycleGAN > Pix2Pix" (niteliksel; CycleGAN renk doğruluğu ve zenginliği bakımından daha üstün) | "Geliştirilmiş Pix2Pix > Pix2Pix > CycleGAN" (niceliksel — piksel sadakat metriklerinde) |
 
-> **Not:** Tablo 4.2'deki Chen vd. değerleri, [10] makalesindeki Tablo 4'ün ilgili satırından alınmalıdır; bu satırlar tezin son derleme aşamasında orijinal makaleden hassas değerlerle doldurulacaktır. Bu tezdeki Pix2Pix baseline'ı, **veri ölçeğindeki ~14× büyümeye** ek olarak FID ve LPIPS gibi modern algısal metrikleri raporlamasıyla literatüre niceliksel olarak daha kapsamlı bir karşılaştırma zemini sağlamaktadır.
+**Önemli Gözlem.** Chen vd.'nin Pix2Pix ve CycleGAN'a ilişkin **niteliksel** bulgusu ("CycleGAN renk doğruluğunda daha üstündür") ile bu tezin **niceliksel** bulgusu (CycleGAN FID'de üstün; Pix2Pix piksel-sadakat metriklerinde üstün) **birbirini tamamlayıcı niteliktedir**. Algı-bozulma ödünleşimi (§4.3.3) bu görünür çelişkiyi açıklamaktadır: CycleGAN'ın dağılımsal gerçekçilik üstünlüğü insan-algısal olarak "daha iyi renkler" olarak yorumlanır, fakat piksel-tam doğrulukta Pix2Pix'in altında kalır.
+
+Bu metodolojik karşılaştırma, **tezin literatüre üç düzeyde katkısını** somutlaştırmaktadır:
+
+1. **Veri ölçeği:** 2.194 eşli çift ile [10]'un test seti büyüklüğüne (5) kıyasla **~220 kat daha geniş** bir doğrulama tabanı.
+2. **Niceliksel sertlik:** [10]'un raporlamadığı beş standart metriği (FID, SSIM, PSNR, LPIPS, L1) birlikte sunarak bilimsel tekrarlanabilirliği güçlendirmiştir.
+3. **Mimari kapsam:** Pix2Pix ve CycleGAN'a ek olarak **Geliştirilmiş Pix2Pix (512²+VGG)** modelinin park-renklendirme problemine ilk uygulanması.
+
+Niceliksel metrik raporlanmadığı için Chen vd.'nin sonuçlarıyla **doğrudan sayı-karşılaştırması** mümkün değildir; karşılaştırma metodolojik düzlemde yapılmakta ve sonraki çalışmalar için **kıyaslanabilir niceliksel zemin** bu tez tarafından kurulmaktadır.
 
 ### 4.2.5 Eğitim Yakınsama Davranışı
 
