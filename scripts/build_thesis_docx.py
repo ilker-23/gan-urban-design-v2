@@ -14,9 +14,13 @@ Kullanım:
 
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 from docx import Document
 from docx.shared import Pt, Cm, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
@@ -28,7 +32,75 @@ from docx.oxml import OxmlElement
 REPO = Path(__file__).resolve().parent.parent
 DOCS = REPO / "docs"
 FIGS = REPO / "figures"
+EQ_CACHE = REPO / "figures" / "_equations"
+EQ_CACHE.mkdir(parents=True, exist_ok=True)
 OUT  = REPO / "Tez_GAN_Urban_Design.docx"
+
+
+# ---------------------------------------------------------------------------
+# LaTeX denklem render (matplotlib mathtext → PNG)
+# ---------------------------------------------------------------------------
+# matplotlib mathtext bazı LaTeX komutlarını desteklemez (ör. \tag).
+# Bu yardımcı, \tag{N} kısmını ayırır, geri kalanı mathtext'e besler.
+_TAG_RE = re.compile(r"\\tag\{([^}]+)\}")
+# mathtext'te `\text{...}` yerine kullanılabilir mathrm
+_TEXT_RE = re.compile(r"\\text\{([^}]+)\}")
+# `\left[`, `\right]` mathtext'te genelde \left( \right) dışında düzgün çalışır;
+# basit replace ile sade hale getir
+_LEFT_RIGHT_RE = re.compile(
+    r"\\(left|right|"
+    r"bigl|bigr|biggl|biggr|"
+    r"Bigl|Bigr|Biggl|Biggr|"
+    r"big|Big|bigg|Bigg)\s*"
+)
+
+
+def _normalize_latex_for_mathtext(latex: str) -> tuple[str, str | None]:
+    """LaTeX'i matplotlib mathtext uyumlu hale getirir.
+    Dönüş: (temizlenmiş_formül, tag_no veya None)."""
+    s = latex.strip()
+
+    # \tag{N} ayır
+    tag = None
+    m = _TAG_RE.search(s)
+    if m:
+        tag = m.group(1)
+        s = _TAG_RE.sub("", s).strip()
+
+    # \text{...} -> \mathrm{...}
+    s = _TEXT_RE.sub(r"\\mathrm{\1}", s)
+    # \left/\right etiketlerini kaldır (mathtext bunlarsız da boyutlandırır)
+    s = _LEFT_RIGHT_RE.sub("", s)
+    # \tfrac → \frac (mathtext destek)
+    s = s.replace(r"\tfrac", r"\frac")
+    # \;  ve  \,  \!  (boşluk komutları) → düz boşluk
+    s = re.sub(r"\\[,;:!]", " ", s)
+    # \displaystyle çıkar
+    s = s.replace(r"\displaystyle", "")
+    # \mathbb destekli, dokunma
+    # Birden fazla boşluğu sıkıştır
+    s = re.sub(r"\s+", " ", s).strip()
+    return s, tag
+
+
+def render_equation_png(latex: str, display: bool = True, size: int = 16) -> tuple[Path, str | None]:
+    """LaTeX denklemini PNG'ye render eder; cache'lenmiş yol + tag döndürür."""
+    normalized, tag = _normalize_latex_for_mathtext(latex)
+    h = hashlib.md5(f"{normalized}|d{display}|s{size}".encode("utf-8")).hexdigest()[:12]
+    out_path = EQ_CACHE / f"eq_{h}.png"
+    if out_path.exists():
+        return out_path, tag
+
+    formula = f"${normalized}$"
+    # Geçici figür oluştur, sıkıca kırp
+    fig = plt.figure(figsize=(0.01, 0.01))   # boyut sonradan ayarlanacak
+    fig.text(0.5, 0.5, formula, fontsize=size, ha="center", va="center",
+             usetex=False)
+    fig.canvas.draw()
+    fig.savefig(out_path, dpi=240, bbox_inches="tight",
+                pad_inches=0.08, facecolor="white", transparent=False)
+    plt.close(fig)
+    return out_path, tag
 
 BODY_FONT = "Times New Roman"
 BODY_SIZE = 12   # pt
@@ -84,8 +156,7 @@ def set_run_font(run, size=BODY_SIZE, bold=False, italic=False,
     rFonts.set(qn("w:cs"), font)
 
 
-# Inline markdown parsing — **bold**, *italic*, `code`, [link](url)
-# Math ($...$) düz metin olarak geçilir, sayısal sembol bütünlüğü için
+# Inline markdown parsing — **bold**, *italic*, `code`, [link](url), $math$
 INLINE_RE = re.compile(
     r"(\*\*[^*]+?\*\*|\*[^*\n]+?\*|`[^`]+?`|\[[^\]]+?\]\([^)]+?\)|\$[^$]+?\$)"
 )
@@ -93,7 +164,6 @@ INLINE_RE = re.compile(
 
 def add_inline_runs(paragraph, text, base_size=BODY_SIZE, base_italic=False):
     """Bir markdown satırını parse edip inline run'ları paragrafa ekler."""
-    # &amp; vs decode değil — markdown saf metin gibi davran
     parts = INLINE_RE.split(text)
     for part in parts:
         if not part:
@@ -114,9 +184,19 @@ def add_inline_runs(paragraph, text, base_size=BODY_SIZE, base_italic=False):
             set_run_font(run, size=base_size, color=RGBColor(0x10, 0x4E, 0x8B))
             run.font.underline = True
         elif part.startswith("$") and part.endswith("$"):
-            run = paragraph.add_run(part[1:-1])
-            set_run_font(run, size=base_size, italic=True,
-                         font="Cambria Math")
+            # Inline matematik: küçük PNG olarak gömülür, satır içinde hizalı
+            latex = part[1:-1]
+            try:
+                png_path, _ = render_equation_png(latex, display=False,
+                                                  size=base_size + 2)
+                run = paragraph.add_run()
+                # Boy gövde metni ile orantılı (1 pt ≈ 0.353 mm)
+                run.add_picture(str(png_path), height=Cm(0.50))
+            except Exception:
+                # Render başarısız olursa düz metin (yedek)
+                run = paragraph.add_run(latex)
+                set_run_font(run, size=base_size, italic=True,
+                             font="Cambria Math")
         else:
             run = paragraph.add_run(part)
             set_run_font(run, size=base_size, italic=base_italic)
@@ -197,6 +277,46 @@ def parse_markdown_to_docx(md_text: str, doc: Document):
             p_borders.append(bot)
             p.paragraph_format.element.get_or_add_pPr().append(p_borders)
             i += 1
+            continue
+
+        # 2.5) Blok denklem $$ ... $$
+        if stripped.startswith("$$"):
+            # Tek satır $$ EQ $$ veya çok satır
+            if stripped.endswith("$$") and len(stripped) > 4:
+                latex = stripped[2:-2].strip()
+                i += 1
+            else:
+                inner = []
+                inner.append(stripped[2:])
+                i += 1
+                while i < n:
+                    cur = lines[i].rstrip()
+                    if cur.endswith("$$"):
+                        inner.append(cur[:-2])
+                        i += 1
+                        break
+                    inner.append(cur)
+                    i += 1
+                latex = "\n".join(inner).strip()
+            try:
+                png_path, tag = render_equation_png(latex, display=True, size=20)
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.space_before = Pt(6)
+                p.paragraph_format.space_after = Pt(6)
+                run = p.add_run()
+                run.add_picture(str(png_path), height=Cm(1.1))
+                if tag:
+                    # Sağda denklem numarası
+                    t_run = p.add_run(f"     ({tag})")
+                    set_run_font(t_run, size=BODY_SIZE, italic=False)
+            except Exception as e:
+                # Yedek: ham metin (gösterimden iyidir hiçbir şey olmamasından)
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = p.add_run(latex)
+                set_run_font(run, size=BODY_SIZE, italic=True,
+                             font="Cambria Math")
             continue
 
         # 3) Kod bloğu ```...```
@@ -316,6 +436,7 @@ def parse_markdown_to_docx(md_text: str, doc: Document):
             if nxt.startswith("|"): break
             if nxt.startswith(">"): break
             if nxt.startswith("```"): break
+            if nxt.startswith("$$"): break
             if re.match(r"^(\s*)[-•]\s+", nxt): break
             if re.match(r"^(\s*)\d+\.\s+", nxt): break
             if nxt == "---": break
