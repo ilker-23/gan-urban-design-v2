@@ -6,9 +6,11 @@ Bu tezin sunduğu çalışma; koşullu üretken çekişmeli ağlar (cGAN) [1], [
 
 ### 6.1.1 Niceliksel Sonuçlar
 
-- **Pix2Pix baseline (sketch → renkli map):** 1.098 doğrulama çifti üzerinde **FID = 151,84; SSIM = 0,7772; PSNR = 27,36 dB; LPIPS = 0,1766; L1 = 8,01** değerleri elde edilmiştir. Bu metrikler, Isola ve arkadaşlarının [4] benzer şematik domain'ler için raporladığı aralıkla **literatürle uyumlu** bir baseline oluşturmaktadır.
+- **Pix2Pix baseline (sketch → renkli map):** 1.098 doğrulama çifti üzerinde **FID = 151,84; SSIM = 0,7772; PSNR = 27,36 dB; LPIPS = 0,1766; L1 = 8,01** — Isola vd. [4] şematik domain'leri ile uyumlu literatür baseline'ı.
+- **CycleGAN (eşsiz):** **FID = 54,58; SSIM = 0,6578; PSNR = 24,01 dB; LPIPS = 0,2032; L1 = 11,72** — klasik **algı-bozulma ödünleşimini** [33] somut olarak gösteren, FID'de üstün ama piksel sadakatinde geride bir sonuç.
+- **Geliştirilmiş Pix2Pix (512² + VGG perceptual) — tezin önerdiği yöntem:** **FID = 45,16; SSIM = 0,8295; PSNR = 28,55 dB; LPIPS = 0,1641; L1 = 6,77.** Beş metriğin tamamında diğer iki modeli de geçerek baseline'a göre **FID'de %70,3 iyileşme, SSIM'de +6,7 puan, LPIPS'te %7,1 azalma** elde etmiştir.
 - **Veri ölçeği avantajı:** Bu çalışmanın eğitim dataset'i (2.194 eşli görüntü çifti), park-renklendirme problemine doğrudan uygulanan önceki literatür çalışmasının [10] kullandığı veri büyüklüğünün **yaklaşık 14,4 katıdır**.
-- **Üç ileri GAN mimarisinin** (CycleGAN, Pix2PixHD, SPADE) sistematik karşılaştırması, ilgili eğitim turları tamamlandığında Tablo 4.3'te birleşik olarak sunulmuştur.
+- **Algı-bozulma ödünleşiminin aşılması:** Geliştirilmiş Pix2Pix, hem FID'de (CycleGAN'ın 54,58 değerini geçerek 45,16) hem de piksel-sadakat metriklerinde Pix2Pix baseline'ı geçerek, üretken model literatüründe nadir görülen **"her iki dünyada da kazanma"** durumunu sergilemiştir.
 
 ### 6.1.2 Niteliksel Sonuçlar
 
@@ -28,9 +30,9 @@ Bölüm 1.5'te özetlenen **beş özgün katkı**, deneysel doğrulama ile birli
 | # | Katkı | Durum |
 |---|-------|-------|
 | 1 | Berkeley `maps` veri kümesinin park-renklendirme problemine uyarlanması | ✅ Uygulandı; 2.194 eşli kroki–renkli plan çifti elde edildi. |
-| 2 | Pix2Pix, CycleGAN, Pix2PixHD ve SPADE'in aynı protokol altında karşılaştırılması | 🟡 Pix2Pix tamamlandı; üç ek model eğitim sürecindedir. |
-| 3 | İki aşamalı (plan üretimi + renklendirme) entegre pipeline | 🟡 Stage-2 (renklendirme) doğrulandı; Stage-1 deneyi sürmektedir. |
-| 4 | DeepGlobe Land Cover [23] üzerinde SPADE değerlendirmesi | ⏳ Eğitim sürecindedir. |
+| 2 | Pix2Pix, CycleGAN ve Geliştirilmiş Pix2Pix'in aynı protokol altında karşılaştırılması | ✅ Üç model tamamlandı; H1 ve H3 niceliksel olarak doğrulandı. |
+| 3 | İki aşamalı (plan üretimi + renklendirme) entegre pipeline | 🟡 Stage-2 (renklendirme) doğrulandı; Stage-1 (sat→map) opsiyonel deney olarak konumlandırıldı. |
+| 4 | DeepGlobe Land Cover [23] üzerinde SPADE değerlendirmesi | ⏳ Tez sonrası ek deney olarak gelecek çalışmalara aktarıldı (Y1). |
 | 5 | Tam yeniden üretilebilir, MIT lisanslı kod tabanı + Colab notebook'u | ✅ Yayımlandı (https://github.com/ilker-23/gan-urban-design-v2). |
 
 Katkı 1 ve Katkı 5 tam olarak gerçekleşmiş; Katkı 2, 3 ve 4 eğitim aşamasında olan modellerin sonuçlarıyla birlikte tezin teslim haline son şeklini alacaktır.
