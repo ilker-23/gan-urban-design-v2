@@ -26,10 +26,13 @@ class Pix2PixModel(nn.Module):
         opt_cfg = cfg["optim"]
 
         # Generator: A -> B
+        # num_downs varsayılanı görüntü boyutundan türetilir: 256 -> 8, 512 -> 9.
+        default_downs = 9 if int(cfg["data"].get("image_size", 256)) >= 512 else 8
+        num_downs = int(m.get("num_downs", default_downs))
         self.G = UNetGenerator(
             in_channels=m["in_channels"],
             out_channels=m["out_channels"],
-            num_downs=8,
+            num_downs=num_downs,
             ngf=m["gen_features"],
             norm=m["norm"],
             use_dropout=m["use_dropout"],

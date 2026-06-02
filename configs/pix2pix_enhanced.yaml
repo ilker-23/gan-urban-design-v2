@@ -1,0 +1,50 @@
+# Geliştirilmiş Pix2Pix — sketch -> map, 512² + VGG perceptual loss
+# Pix2PixHD'nin iki ana katkısını (yüksek çözünürlük + algısal kayıp) kendi
+# kontrol ettiğimiz, tam tekrarlanabilir kod tabanında uygular.
+experiment_name: pix2pix_enhanced_sketch2map
+
+# Veri
+data:
+  root: data/processed/maps_sketch
+  image_size: 512            # Pix2Pix baseline 256 idi; burada 2× çözünürlük
+  batch_size: 4              # A100 40GB'de 512² + VGG için uygun
+  num_workers: 4
+  augment:
+    h_flip: true
+    rotate90: true
+    color_jitter_target_only: true
+
+# Model
+model:
+  name: pix2pix
+  in_channels: 3
+  out_channels: 3
+  num_downs: 9               # 512² için (2^9); 256² baseline'da 8 idi
+  gen_features: 64
+  disc_features: 64
+  norm: instance
+  use_dropout: true
+
+# Kayıp
+loss:
+  gan: lsgan
+  lambda_l1: 100.0
+  lambda_perceptual: 10.0    # VGG-19 algısal kayıp AÇIK (baseline'da 0 idi)
+
+# Optimizasyon
+optim:
+  lr: 2.0e-4
+  beta1: 0.5
+  beta2: 0.999
+
+# Eğitim
+train:
+  epochs: 150
+  lr_decay_start_epoch: 75
+  save_every_epochs: 25
+  log_every_steps: 100
+  seed: 42
+
+# Çıktı
+output:
+  run_dir: ${oc.env:RUN_DIR, results/pix2pix_enhanced}

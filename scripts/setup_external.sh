@@ -22,4 +22,13 @@ if [ ! -d pix2pixHD ]; then
   git clone --depth=1 https://github.com/NVIDIA/pix2pixHD.git
 fi
 
+cd ..   # repo köküne dön (EXT'in bir üstü)
+
+# Pix2PixHD'yi Python 3.12 / PyTorch 2.x ile uyumlu hale getir (fractions.gcd vb.)
+if [ -f "$EXT/pix2pixHD/train.py" ]; then
+  echo ">> pix2pixHD Python 3.12 uyumluluk yaması uygulanıyor..."
+  python scripts/patch_pix2pixhd.py --repo "$EXT/pix2pixHD" || \
+    echo "   (uyarı: patch script çalıştırılamadı; manuel kontrol gerekebilir)"
+fi
+
 echo "Harici repolar $EXT/ altında hazır."

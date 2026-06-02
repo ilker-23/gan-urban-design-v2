@@ -38,13 +38,22 @@ import torch
 from tqdm import tqdm
 
 
-def collect_pairs(results_dir: Path, pattern: str) -> list[tuple[Path, Path]]:
-    """(real_B, fake_B) çiftleri toplar."""
+def _find_real_in_dir(stem: str, real_dir: Path) -> Path | None:
+    """Verilen stem için real_dir içinde aynı isimli görseli bulur (uzantı esnek)."""
+    for ext in (".png", ".jpg", ".jpeg"):
+        p = real_dir / f"{stem}{ext}"
+        if p.exists():
+            return p
+    return None
+
+
+def collect_pairs(results_dir: Path, pattern: str, real_dir: Path | None = None) -> list[tuple[Path, Path]]:
+    """(real, fake) çiftleri toplar."""
     files = sorted(results_dir.iterdir())
     pairs: list[tuple[Path, Path]] = []
 
     if pattern == "junyanz":
-        # <id>_real_B.png  ve  <id>_fake_B.png
+        # junyanz test.py hem <id>_real_B hem <id>_fake_B kaydeder.
         reals = {re.sub(r"_real_B\.\w+$", "", f.name): f for f in files if "_real_B." in f.name}
         fakes = {re.sub(r"_fake_B\.\w+$", "", f.name): f for f in files if "_fake_B." in f.name}
         for k in reals:
@@ -52,11 +61,25 @@ def collect_pairs(results_dir: Path, pattern: str) -> list[tuple[Path, Path]]:
                 pairs.append((reals[k], fakes[k]))
 
     elif pattern == "pix2pixhd":
-        reals = {re.sub(r"_real_image\.\w+$", "", f.name): f for f in files if "_real_image." in f.name}
-        fakes = {re.sub(r"_synthesized_image\.\w+$", "", f.name): f for f in files if "_synthesized_image." in f.name}
-        for k in reals:
-            if k in fakes:
-                pairs.append((reals[k], fakes[k]))
+        # pix2pixHD test.py SADECE _synthesized_image (ve _input_label) kaydeder;
+        # gerçek hedefi kaydetmez. Bu yüzden gerçek görseller --real-dir'den (test_B) alınır.
+        fakes = {re.sub(r"_synthesized_image\.\w+$", "", f.name): f
+                 for f in files if "_synthesized_image." in f.name}
+        # Önce repo içinde _real_image var mı diye bak (bazı sürümler kaydeder):
+        reals_inline = {re.sub(r"_real_image\.\w+$", "", f.name): f
+                        for f in files if "_real_image." in f.name}
+        for k, fake in fakes.items():
+            if k in reals_inline:
+                pairs.append((reals_inline[k], fake))
+            elif real_dir is not None:
+                rp = _find_real_in_dir(k, real_dir)
+                if rp is not None:
+                    pairs.append((rp, fake))
+        if not pairs and real_dir is None:
+            raise SystemExit(
+                "pix2pixHD çıktısında _real_image yok ve --real-dir verilmedi.\n"
+                "Çözüm: --real-dir data/external/pix2pixhd/test_B  ekleyin."
+            )
     else:
         raise ValueError(f"Bilinmeyen pattern: {pattern}")
     return pairs
@@ -74,6 +97,8 @@ def main() -> None:
     ap.add_argument("--pattern", required=True, choices=["junyanz", "pix2pixhd"])
     ap.add_argument("--tag", required=True, help="Çıktı klasörü için etiket")
     ap.add_argument("--out", default="results/external_eval", type=Path)
+    ap.add_argument("--real-dir", default=None, type=Path,
+                    help="pix2pixHD için gerçek hedef görsellerin dizini (örn. data/external/pix2pixhd/test_B).")
     args = ap.parse_args()
 
     if not args.results_dir.exists():
@@ -81,7 +106,7 @@ def main() -> None:
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    pairs = collect_pairs(args.results_dir, args.pattern)
+    pairs = collect_pairs(args.results_dir, args.pattern, real_dir=args.real_dir)
     if not pairs:
         raise SystemExit("Çift bulunamadı; pattern doğru mu, klasörde test sonuçları var mı?")
     print(f"Çiftler: {len(pairs)}")
