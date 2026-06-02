@@ -215,6 +215,8 @@ Bu nedenle, **bilimsel tekrarlanabilirlik ve metodolojik tutarlılık** ilkeleri
 
 ## 4.6 Tüm Modellerin Karşılaştırması
 
+**Görsel destek:** Tabloyu tamamlayan bar-chart (Şekil 4.3 — `figures/fig_4_3_metrics_bars.png`), radar profil (Şekil 4.4 — `figures/fig_4_4_radar.png`), iyileşme yüzdeleri (Şekil 4.5 — `figures/fig_4_5_improvements.png`) ve algı-bozulma ödünleşimi scatter plotu (Şekil 4.6 — `figures/fig_4_6_tradeoff.png`) `figures/` dizininde sunulmaktadır.
+
 **Tablo 4.5.** Üç GAN mimarisinin `maps` sketch → renkli map çevirisinde performans karşılaştırması (val kümesi: 1.098 örnek).
 
 | Model | Çöz. | FID ↓ | SSIM ↑ | PSNR (dB) ↑ | LPIPS ↓ | L1 ↓ | Eğitim (A100 sa) |

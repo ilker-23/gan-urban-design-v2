@@ -22,7 +22,7 @@ Bu çalışmada, kentsel peyzaj plan üretimi ve renklendirme problemleri **koş
                   └─────────────────────────────┘
 ```
 
-**Şekil 3.1.** Önerilen iki aşamalı kentsel peyzaj plan üretimi ve renklendirme pipeline'ı.
+**Şekil 3.1.** Önerilen iki aşamalı kentsel peyzaj plan üretimi ve renklendirme pipeline'ı (görsel: `figures/fig_3_1_pipeline.png`).
 
 Her iki aşama da **eşli (paired) görüntü çiftleri** $(A, B) \in \mathcal{X} \times \mathcal{Y}$ üzerinde eğitilen bir cGAN ile gerçeklenmektedir. Burada $A$ koşul (girdi: uydu görüntüsü veya sentetik kroki), $B$ ise hedef (renk-kodlu plan) görüntüsüdür.
 

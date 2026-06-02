@@ -8,10 +8,30 @@ Fırat Üniversitesi Fen Bilimleri Enstitüsü Yüksek Lisans Tezi — Uygulama 
 | Notebook | Açıklama | Aç |
 |----------|----------|----|
 | `colab_pix2pix.ipynb` | Bizim Pix2Pix implementasyonu (sketch→map) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/colab_pix2pix.ipynb) |
-| `colab_external_models.ipynb` | CycleGAN + Pix2PixHD karşılaştırma | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/colab_external_models.ipynb) |
+| `colab_external_models.ipynb` | CycleGAN + Pix2PixHD + Geliştirilmiş Pix2Pix karşılaştırma | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/colab_external_models.ipynb) |
+| `colab_figures.ipynb` | Veriye-bağlı tez şekilleri (dataset/niteliksel kıyaslama) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/colab_figures.ipynb) |
 
 > Badge çalışmazsa URL'i tarayıcıya yapıştırın:
 > `https://colab.research.google.com/github/ilker-23/gan-urban-design-v2/blob/main/notebooks/<NOTEBOOK>.ipynb`
+
+### Tez Görselleri Galerisi
+
+Statik (veriye bağımsız) görseller `figures/` dizininde commit edildi:
+
+| Şekil | Açıklama | Dosya |
+|-------|----------|-------|
+| 3.1 | Önerilen iki-aşamalı GAN pipeline'ı | `figures/fig_3_1_pipeline.png` |
+| 3.2 | U-Net jeneratör mimarisi (256/512 görselleştirme) | `figures/fig_3_2_unet.png` |
+| 3.3 | 70×70 PatchGAN ayırıcı | `figures/fig_3_3_patchgan.png` |
+| 3.4 | SPADE blok diyagramı (denklem 3.9) | `figures/fig_3_4_spade.png` |
+| 4.3 | 3 model × 5 metrik bar chart | `figures/fig_4_3_metrics_bars.png` |
+| 4.4 | Radar grafiği (normalize profil) | `figures/fig_4_4_radar.png` |
+| 4.5 | Enhanced vs baseline iyileşme yüzdeleri | `figures/fig_4_5_improvements.png` |
+| 4.6 | Algı-bozulma ödünleşimi (FID×SSIM scatter) | `figures/fig_4_6_tradeoff.png` |
+
+Bu görseller `python3 scripts/figures/make_static_figures.py` ile yeniden üretilebilir.
+
+**Veriye bağımlı görseller** (4.1 dataset örnekleri, 4.2 sentetik sketch yöntemleri, 4.7 niteliksel model karşılaştırması, 4.8 eğitim progresi) için `colab_figures.ipynb` Colab notebook'unu çalıştırın — Drive'daki sample dosyalarını okur, `figures/data/` ve Drive'a yazar.
 
 ---
 
