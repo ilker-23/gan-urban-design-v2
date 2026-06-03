@@ -15,92 +15,123 @@ Kullanım:
 from __future__ import annotations
 
 import hashlib
+import os
 import re
+import shutil
+import subprocess
+import tempfile
+import zipfile
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 from docx import Document
 from docx.shared import Pt, Cm, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
+from docx.oxml.ns import qn, nsmap
+from docx.oxml import OxmlElement, parse_xml
 
 
 REPO = Path(__file__).resolve().parent.parent
 DOCS = REPO / "docs"
 FIGS = REPO / "figures"
-EQ_CACHE = REPO / "figures" / "_equations"
+EQ_CACHE = REPO / "figures" / "_omml"   # OMML XML önbelleği
 EQ_CACHE.mkdir(parents=True, exist_ok=True)
 OUT  = REPO / "Tez_GAN_Urban_Design.docx"
 
+# Pandoc bul (sistem PATH veya ~/.local/bin)
+PANDOC = shutil.which("pandoc") or os.path.expanduser("~/.local/bin/pandoc")
+if not os.path.isfile(PANDOC):
+    raise SystemExit(
+        f"pandoc bulunamadı: {PANDOC}\n"
+        "Kurulum: https://github.com/jgm/pandoc/releases -> arm64-macOS.zip indirin, "
+        "binary'yi ~/.local/bin/pandoc altına kopyalayın."
+    )
+
+# OMML namespace (Word matematik)
+OMML_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+
 
 # ---------------------------------------------------------------------------
-# LaTeX denklem render (matplotlib mathtext → PNG)
+# LaTeX → OMML (Word native matematik) dönüşümü
 # ---------------------------------------------------------------------------
-# matplotlib mathtext bazı LaTeX komutlarını desteklemez (ör. \tag).
-# Bu yardımcı, \tag{N} kısmını ayırır, geri kalanı mathtext'e besler.
+# Pandoc, LaTeX matematiğini OMML'e çevirebilen tek güvenilir araçtır.
+# Strateji: tek bir denklem içeren minimal markdown -> docx -> word/document.xml
+# içinden <m:oMath ...> XML elementini ayıkla, önbelleğe yaz, sonra
+# python-docx ile paragrafa direkt enjekte et.
+
 _TAG_RE = re.compile(r"\\tag\{([^}]+)\}")
-# mathtext'te `\text{...}` yerine kullanılabilir mathrm
-_TEXT_RE = re.compile(r"\\text\{([^}]+)\}")
-# `\left[`, `\right]` mathtext'te genelde \left( \right) dışında düzgün çalışır;
-# basit replace ile sade hale getir
-_LEFT_RIGHT_RE = re.compile(
-    r"\\(left|right|"
-    r"bigl|bigr|biggl|biggr|"
-    r"Bigl|Bigr|Biggl|Biggr|"
-    r"big|Big|bigg|Bigg)\s*"
+
+_OMATH_PARA_RE = re.compile(
+    r"<m:oMathPara[^>]*>(.*?)</m:oMathPara>", re.DOTALL
+)
+_OMATH_RE = re.compile(
+    r"<m:oMath\b[^>]*>.*?</m:oMath>", re.DOTALL
 )
 
 
-def _normalize_latex_for_mathtext(latex: str) -> tuple[str, str | None]:
-    """LaTeX'i matplotlib mathtext uyumlu hale getirir.
-    Dönüş: (temizlenmiş_formül, tag_no veya None)."""
-    s = latex.strip()
-
-    # \tag{N} ayır
+def _strip_tag(latex: str) -> tuple[str, str | None]:
+    """LaTeX'ten \\tag{N} kısmını ayır."""
     tag = None
-    m = _TAG_RE.search(s)
+    m = _TAG_RE.search(latex)
     if m:
-        tag = m.group(1)
-        s = _TAG_RE.sub("", s).strip()
-
-    # \text{...} -> \mathrm{...}
-    s = _TEXT_RE.sub(r"\\mathrm{\1}", s)
-    # \left/\right etiketlerini kaldır (mathtext bunlarsız da boyutlandırır)
-    s = _LEFT_RIGHT_RE.sub("", s)
-    # \tfrac → \frac (mathtext destek)
-    s = s.replace(r"\tfrac", r"\frac")
-    # \;  ve  \,  \!  (boşluk komutları) → düz boşluk
-    s = re.sub(r"\\[,;:!]", " ", s)
-    # \displaystyle çıkar
-    s = s.replace(r"\displaystyle", "")
-    # \mathbb destekli, dokunma
-    # Birden fazla boşluğu sıkıştır
-    s = re.sub(r"\s+", " ", s).strip()
-    return s, tag
+        tag = m.group(1).strip()
+        latex = _TAG_RE.sub("", latex).strip()
+    return latex, tag
 
 
-def render_equation_png(latex: str, display: bool = True, size: int = 16) -> tuple[Path, str | None]:
-    """LaTeX denklemini PNG'ye render eder; cache'lenmiş yol + tag döndürür."""
-    normalized, tag = _normalize_latex_for_mathtext(latex)
-    h = hashlib.md5(f"{normalized}|d{display}|s{size}".encode("utf-8")).hexdigest()[:12]
-    out_path = EQ_CACHE / f"eq_{h}.png"
-    if out_path.exists():
-        return out_path, tag
+def latex_to_omml(latex: str, display: bool = True) -> tuple[str, str | None]:
+    """LaTeX'i pandoc kullanarak OMML XML metnine çevirir.
+    Cache'li; aynı denklem için pandoc'u yeniden çağırmaz.
+    Döner: (omath_xml_str veya None, tag_no veya None)."""
+    formula, tag = _strip_tag(latex)
+    key = hashlib.md5(f"{formula}|d{display}".encode("utf-8")).hexdigest()[:14]
+    cache_path = EQ_CACHE / f"eq_{key}.xml"
 
-    formula = f"${normalized}$"
-    # Geçici figür oluştur, sıkıca kırp
-    fig = plt.figure(figsize=(0.01, 0.01))   # boyut sonradan ayarlanacak
-    fig.text(0.5, 0.5, formula, fontsize=size, ha="center", va="center",
-             usetex=False)
-    fig.canvas.draw()
-    fig.savefig(out_path, dpi=240, bbox_inches="tight",
-                pad_inches=0.08, facecolor="white", transparent=False)
-    plt.close(fig)
-    return out_path, tag
+    if cache_path.exists():
+        return cache_path.read_text(encoding="utf-8"), tag
+
+    delim = "$$" if display else "$"
+    md = f"{delim}{formula}{delim}\n"
+
+    with tempfile.TemporaryDirectory() as td:
+        td_path = Path(td)
+        in_md = td_path / "in.md"
+        out_dx = td_path / "out.docx"
+        in_md.write_text(md, encoding="utf-8")
+        try:
+            subprocess.run(
+                [PANDOC, "-f", "markdown", "-t", "docx",
+                 str(in_md), "-o", str(out_dx)],
+                check=True, capture_output=True, timeout=20,
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"  ! pandoc fail: {formula[:60]!r} -> {e.stderr.decode()[:120]}")
+            return None, tag
+        except subprocess.TimeoutExpired:
+            print(f"  ! pandoc timeout: {formula[:60]!r}")
+            return None, tag
+
+        with zipfile.ZipFile(out_dx) as z:
+            doc_xml = z.read("word/document.xml").decode("utf-8")
+
+    # Display matematik <m:oMathPara> içine sarmalanır; inline ise sadece <m:oMath>
+    m = _OMATH_PARA_RE.search(doc_xml)
+    if m:
+        omml = "<m:oMathPara xmlns:m=\"%s\">%s</m:oMathPara>" % (
+            OMML_NS, m.group(1)
+        )
+    else:
+        m2 = _OMATH_RE.search(doc_xml)
+        if not m2:
+            return None, tag
+        omml = m2.group(0)
+        # namespace ekle
+        if "xmlns:m=" not in omml:
+            omml = omml.replace(
+                "<m:oMath", f'<m:oMath xmlns:m="{OMML_NS}"', 1
+            )
+    cache_path.write_text(omml, encoding="utf-8")
+    return omml, tag
 
 BODY_FONT = "Times New Roman"
 BODY_SIZE = 12   # pt
@@ -184,19 +215,22 @@ def add_inline_runs(paragraph, text, base_size=BODY_SIZE, base_italic=False):
             set_run_font(run, size=base_size, color=RGBColor(0x10, 0x4E, 0x8B))
             run.font.underline = True
         elif part.startswith("$") and part.endswith("$"):
-            # Inline matematik: küçük PNG olarak gömülür, satır içinde hizalı
+            # Inline matematik: native Word OMML olarak eklenir
             latex = part[1:-1]
-            try:
-                png_path, _ = render_equation_png(latex, display=False,
-                                                  size=base_size + 2)
-                run = paragraph.add_run()
-                # Boy gövde metni ile orantılı (1 pt ≈ 0.353 mm)
-                run.add_picture(str(png_path), height=Cm(0.50))
-            except Exception:
-                # Render başarısız olursa düz metin (yedek)
-                run = paragraph.add_run(latex)
-                set_run_font(run, size=base_size, italic=True,
-                             font="Cambria Math")
+            omml, _ = latex_to_omml(latex, display=False)
+            if omml:
+                # Inline OMath, paragrafın doğrudan çocuğu olarak insert
+                # (run sıralamasını koruyarak)
+                try:
+                    el = parse_xml(omml)
+                    paragraph._p.append(el)
+                    continue
+                except Exception:
+                    pass
+            # Yedek: ham metin
+            run = paragraph.add_run(latex)
+            set_run_font(run, size=base_size, italic=True,
+                         font="Cambria Math")
         else:
             run = paragraph.add_run(part)
             set_run_font(run, size=base_size, italic=base_italic)
@@ -279,15 +313,13 @@ def parse_markdown_to_docx(md_text: str, doc: Document):
             i += 1
             continue
 
-        # 2.5) Blok denklem $$ ... $$
+        # 2.5) Blok denklem $$ ... $$  → Word native OMML (oMathPara)
         if stripped.startswith("$$"):
-            # Tek satır $$ EQ $$ veya çok satır
             if stripped.endswith("$$") and len(stripped) > 4:
                 latex = stripped[2:-2].strip()
                 i += 1
             else:
-                inner = []
-                inner.append(stripped[2:])
+                inner = [stripped[2:]]
                 i += 1
                 while i < n:
                     cur = lines[i].rstrip()
@@ -298,23 +330,42 @@ def parse_markdown_to_docx(md_text: str, doc: Document):
                     inner.append(cur)
                     i += 1
                 latex = "\n".join(inner).strip()
-            try:
-                png_path, tag = render_equation_png(latex, display=True, size=20)
+
+            omml, tag = latex_to_omml(latex, display=True)
+            inserted = False
+            if omml:
+                try:
+                    # Tab-stop: ortada formül, sağa yaslı denklem numarası
+                    # OMath kendini ortalar; tag'i ayrı bir paragraf ile değil
+                    # tek paragrafta sağa yaslı tab ile ekliyoruz.
+                    p = doc.add_paragraph()
+                    p.paragraph_format.space_before = Pt(6)
+                    p.paragraph_format.space_after = Pt(6)
+                    # OMathPara/oMath element'i paragraf çocuğu olarak ekle
+                    el = parse_xml(omml)
+                    p._p.append(el)
+                    if tag:
+                        # Numarayı paragraf sonuna sağa yaslı koy (oMath sonrası
+                        # ekstra run + sağ tab stop)
+                        from docx.enum.text import WD_TAB_ALIGNMENT
+                        from docx.shared import Cm as _Cm
+                        # Tab stop ekleme
+                        tab_stops = p.paragraph_format.tab_stops
+                        try:
+                            tab_stops.add_tab_stop(_Cm(16.0),
+                                                   alignment=WD_TAB_ALIGNMENT.RIGHT)
+                        except Exception:
+                            pass
+                        r = p.add_run(f"\t({tag})")
+                        set_run_font(r, size=BODY_SIZE)
+                    inserted = True
+                except Exception as e:
+                    print(f"  ! OMML parse fail: {e}")
+            if not inserted:
+                # Yedek: salt metin (asla görsel kullanma — tez kuralı gereği)
                 p = doc.add_paragraph()
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                p.paragraph_format.space_before = Pt(6)
-                p.paragraph_format.space_after = Pt(6)
-                run = p.add_run()
-                run.add_picture(str(png_path), height=Cm(1.1))
-                if tag:
-                    # Sağda denklem numarası
-                    t_run = p.add_run(f"     ({tag})")
-                    set_run_font(t_run, size=BODY_SIZE, italic=False)
-            except Exception as e:
-                # Yedek: ham metin (gösterimden iyidir hiçbir şey olmamasından)
-                p = doc.add_paragraph()
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                run = p.add_run(latex)
+                run = p.add_run(latex + (f"   ({tag})" if tag else ""))
                 set_run_font(run, size=BODY_SIZE, italic=True,
                              font="Cambria Math")
             continue
